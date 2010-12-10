@@ -45,6 +45,8 @@ from pitivi.ui.curve import Curve
 
 from pitivi.factories.operation import EffectFactory
 
+from pitivi.ui.audiorecord import AudioRecorder
+
 DND_EFFECT_LIST = [[dnd.VIDEO_EFFECT_TUPLE[0], dnd.EFFECT_TUPLE[0]],\
                   [dnd.AUDIO_EFFECT_TUPLE[0], dnd.EFFECT_TUPLE[0]]]
 VIDEO_EFFECT_LIST = [dnd.VIDEO_EFFECT_TUPLE[0], dnd.EFFECT_TUPLE[0]],
@@ -227,6 +229,9 @@ class Timeline(gtk.Table, Loggable, Zoomable):
         self._createUI()
         self._prev_duration = 0
         self.rate = gst.Fraction(1,1)
+
+        self.audiorecorder = AudioRecorder()
+        self.is_recording = False
 
     def _createUI(self):
         self.leftSizeGroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
@@ -827,4 +832,11 @@ class Timeline(gtk.Table, Loggable, Zoomable):
             self.scrollToPlayhead()
 
     def _recordAudioCb(self, action):
-        pass
+        if not self.is_recording:
+            self.audiorecorder.start_recording("/tmp/starter.flac")
+            self.recordaudio_action.set_stock_id(gtk.STOCK_MEDIA_STOP)
+            self.is_recording = True
+        else:
+            self.audiorecorder.stop_recording()
+            self.recordaudio_action.set_stock_id(gtk.STOCK_MEDIA_RECORD)
+            self.is_recording = False            
