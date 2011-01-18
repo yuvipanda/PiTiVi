@@ -22,6 +22,7 @@
 """
 Timeline widgets for the complex view
 """
+import os
 
 import gtk
 import urllib
@@ -291,6 +292,12 @@ class Timeline(gtk.Table, Loggable, Zoomable):
 
         self.show_all()
         self.infostub.hide()
+
+        # initialize audio record dialog
+        ui_files_dir = os.path.dirname(os.path.abspath(__file__))
+        audio_builder = gtk.Builder()
+        audio_builder.add_from_file(os.path.join(ui_files_dir, "audiorecord.glade"))
+        self._audio_record_dialog = audio_builder.get_object("audio_record_dialog")
 
         # toolbar actions
         actions = (
@@ -832,11 +839,4 @@ class Timeline(gtk.Table, Loggable, Zoomable):
             self.scrollToPlayhead()
 
     def _recordAudioCb(self, action):
-        if not self.is_recording:
-            self.audiorecorder.start_recording("/tmp/starter.flac")
-            self.recordaudio_action.set_stock_id(gtk.STOCK_MEDIA_STOP)
-            self.is_recording = True
-        else:
-            self.audiorecorder.stop_recording()
-            self.recordaudio_action.set_stock_id(gtk.STOCK_MEDIA_RECORD)
-            self.is_recording = False            
+        self._audio_record_dialog.show_all()
