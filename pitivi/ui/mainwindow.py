@@ -504,18 +504,24 @@ class PitiviMainWindow(gtk.Window, Loggable):
         # very bottom of the screen.
         ttb = self.uimanager.get_widget("/TimelineToolBar")
 
-        bottom_hbox = gtk.HBox(False)
-        bottom_hbox.pack_start(ttb)
-
         glade_dir = os.path.dirname(os.path.abspath(__file__))
         builder = gtk.Builder()
         builder.add_from_file(os.path.join(glade_dir, "audiorecord.glade"))
-        audiorecord_vbox = builder.get_object("audiorecord_vbox")
-       
-        bottom_hbox.pack_end(audiorecord_vbox, expand=False)
+        audiorecord_hbox = builder.get_object("audiorecord_hbox")
+        
+        audiorecord_spacer = gtk.SeparatorToolItem()
+        audiorecord_spacer.set_draw(False)
+        audiorecord_spacer.set_expand(True)
 
-        vbox.pack_start(bottom_hbox, expand=False)
-        bottom_hbox.show_all()
+        ttb.insert(audiorecord_spacer, -1)
+        audiorecord_spacer.show()
+
+        audiorecord_toolitem = gtk.ToolItem()
+        audiorecord_toolitem.add(audiorecord_hbox)
+        ttb.insert(audiorecord_toolitem, -1)
+        audiorecord_toolitem.show_all()
+
+        vbox.pack_start(ttb, expand=False)
         self.show()
 
         if not self.settings.mainWindowShowMainToolbar:
