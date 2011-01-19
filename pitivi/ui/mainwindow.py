@@ -503,9 +503,19 @@ class PitiviMainWindow(gtk.Window, Loggable):
         # toolbar buttons should be clickable with the mouse cursor at the
         # very bottom of the screen.
         ttb = self.uimanager.get_widget("/TimelineToolBar")
-        vbox.pack_start(ttb, expand=False)
-        ttb.show()
 
+        bottom_hbox = gtk.HBox(False)
+        bottom_hbox.pack_start(ttb)
+
+        glade_dir = os.path.dirname(os.path.abspath(__file__))
+        builder = gtk.Builder()
+        builder.add_from_file(os.path.join(glade_dir, "audiorecord.glade"))
+        audiorecord_vbox = builder.get_object("audiorecord_vbox")
+       
+        bottom_hbox.pack_end(audiorecord_vbox, expand=False)
+
+        vbox.pack_start(bottom_hbox, expand=False)
+        bottom_hbox.show_all()
         self.show()
 
         if not self.settings.mainWindowShowMainToolbar:

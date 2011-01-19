@@ -83,8 +83,6 @@ ui = '''
                 <menuitem action="Split" />
                 <menuitem action="Keyframe" />
                 <separator />
-                <menuitem action="RecordAudio" />
-                <separator />
                 <menuitem action="DeleteObj" />
                 <menuitem action="LinkObj" />
                 <menuitem action="UnlinkObj" />
@@ -101,8 +99,6 @@ ui = '''
             <separator />
             <toolitem action="Split" />
             <toolitem action="Keyframe" />
-            <separator />
-            <toolitem action="RecordAudio" />
             <separator />
             <toolitem action="DeleteObj" />
             <toolitem action="UnlinkObj" />
@@ -293,12 +289,6 @@ class Timeline(gtk.Table, Loggable, Zoomable):
         self.show_all()
         self.infostub.hide()
 
-        # initialize audio record dialog
-        ui_files_dir = os.path.dirname(os.path.abspath(__file__))
-        audio_builder = gtk.Builder()
-        audio_builder.add_from_file(os.path.join(ui_files_dir, "audiorecord.glade"))
-        self._audio_record_dialog = audio_builder.get_object("audio_record_dialog")
-
         # toolbar actions
         actions = (
             ("ZoomIn", gtk.STOCK_ZOOM_IN, None, "<Control>plus", ZOOM_IN,
@@ -337,10 +327,6 @@ class Timeline(gtk.Table, Loggable, Zoomable):
                 self.prevframe),
             ("Nextframe", "pitivi-nextframe", _("_Nextframe"), "R", NEXTFRAME,
                 self.nextframe),
-        
-            # action for recording audio
-            ("RecordAudio", gtk.STOCK_MEDIA_RECORD, None, "", RECORD_AUDIO, 
-                self._recordAudioCb)
         )
 
         actiongroup = gtk.ActionGroup("timelinepermanent")
@@ -359,8 +345,7 @@ class Timeline(gtk.Table, Loggable, Zoomable):
         self.split_action = actiongroup.get_action("Split")
         self.keyframe_action = actiongroup.get_action("Keyframe")
         self.prevframe_action = actiongroup.get_action("Prevframe")
-        self.nextframe_action = actiongroup.get_action("Nextframe")        
-        self.recordaudio_action = actiongroup.get_action("RecordAudio")
+        self.nextframe_action = actiongroup.get_action("Nextframe")
 
         self.ui_manager.insert_action_group(actiongroup, -1)
 
@@ -837,6 +822,3 @@ class Timeline(gtk.Table, Loggable, Zoomable):
         if next_kf:
             self._seeker.seek(next_kf)
             self.scrollToPlayhead()
-
-    def _recordAudioCb(self, action):
-        self._audio_record_dialog.show_all()
