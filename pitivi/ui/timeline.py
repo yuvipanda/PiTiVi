@@ -46,8 +46,6 @@ from pitivi.ui.curve import Curve
 
 from pitivi.factories.operation import EffectFactory
 
-from pitivi.ui.audiorecord import AudioRecorder
-
 DND_EFFECT_LIST = [[dnd.VIDEO_EFFECT_TUPLE[0], dnd.EFFECT_TUPLE[0]],\
                   [dnd.AUDIO_EFFECT_TUPLE[0], dnd.EFFECT_TUPLE[0]]]
 VIDEO_EFFECT_LIST = [dnd.VIDEO_EFFECT_TUPLE[0], dnd.EFFECT_TUPLE[0]],
@@ -226,9 +224,6 @@ class Timeline(gtk.Table, Loggable, Zoomable):
         self._createUI()
         self._prev_duration = 0
         self.rate = gst.Fraction(1,1)
-
-        self.audiorecorder = AudioRecorder(None)
-        self.is_recording = False
 
     def _createUI(self):
         self.leftSizeGroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
