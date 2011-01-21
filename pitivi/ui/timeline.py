@@ -227,7 +227,7 @@ class Timeline(gtk.Table, Loggable, Zoomable):
         self._prev_duration = 0
         self.rate = gst.Fraction(1,1)
 
-        self.audiorecorder = AudioRecorder()
+        self.audiorecorder = AudioRecorder(None)
         self.is_recording = False
 
     def _createUI(self):
