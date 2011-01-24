@@ -1,4 +1,5 @@
 import tempfile
+import os
 
 import gst
 import gtk
@@ -73,7 +74,8 @@ class AudioRecorder(gtk.HBox):
         self._tempfd, self._temppath = tempfile.mkstemp()
         self.sink.set_property("fd", self._tempfd)
         self.pipeline.set_state(gst.STATE_PLAYING)
-        print "Recording to", self._temppath
 
     def stop_recording(self):
         self.pipeline.set_state(gst.STATE_NULL)
+        os.close(self._tempfd) # assuming gstreamer doesn't close the fd. Should check
+        self.app.current.sources.addUris(['file:///' + self._temppath])
