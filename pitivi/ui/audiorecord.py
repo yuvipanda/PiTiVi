@@ -1,3 +1,5 @@
+import tempfile
+
 import gst
 import gtk
 
@@ -31,7 +33,7 @@ class AudioRecorder(gtk.HBox):
         gtk.HBox.__init__(self)
         self.audiosrc = gst.element_factory_make("autoaudiosrc", "audiosrc")
         self.encoder = gst.element_factory_make("flacenc", "encoder")
-        self.sink = gst.element_factory_make("filesink", "sink")
+        self.sink = gst.element_factory_make("fdsink", "sink")
 
         self.pipeline = gst.Pipeline()
         self.pipeline.add(self.audiosrc, self.encoder, self.sink)
@@ -59,7 +61,7 @@ class AudioRecorder(gtk.HBox):
 
     def _recordCb(self, widget):
         if not self.is_recording:
-            self.start_recording("/tmp/test.flac")
+            self.start_recording()
             self.is_recording = True
             self.button_image.set_from_stock(gtk.STOCK_MEDIA_STOP, gtk.ICON_SIZE_LARGE_TOOLBAR)
         else:
@@ -67,9 +69,11 @@ class AudioRecorder(gtk.HBox):
             self.is_recording = False
             self.button_image.set_from_stock(gtk.STOCK_MEDIA_RECORD, gtk.ICON_SIZE_LARGE_TOOLBAR)
 
-    def start_recording(self, filepath):
-        self.sink.set_property("location", filepath)
+    def start_recording(self):
+        self._tempfd, self._temppath = tempfile.mkstemp()
+        self.sink.set_property("fd", self._tempfd)
         self.pipeline.set_state(gst.STATE_PLAYING)
+        print "Recording to", self._temppath
 
     def stop_recording(self):
         self.pipeline.set_state(gst.STATE_NULL)
