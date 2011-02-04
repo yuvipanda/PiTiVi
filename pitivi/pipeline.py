@@ -290,6 +290,9 @@ class Pipeline(Signallable, Loggable):
         self.debug("change:%r, state:%r, pending:%r", change, state, pending)
         return state
 
+    def getClock(self):
+        return self._pipeline.get_clock()
+
     def play(self):
         """
         Sets the L{Pipeline} to PLAYING
