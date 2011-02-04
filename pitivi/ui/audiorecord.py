@@ -34,6 +34,9 @@ def clamp(x, min, max):
 class AudioRecorder(gtk.HBox):
     def __init__(self, instance):
         gtk.HBox.__init__(self)
+        
+        self.app = instance
+
         self.audiosrc = gst.element_factory_make("autoaudiosrc", "audiosrc")
         self.level = gst.element_factory_make("level", "level")
         self.encoder = gst.element_factory_make("flacenc", "encoder")
@@ -44,8 +47,6 @@ class AudioRecorder(gtk.HBox):
         self.pipeline = gst.Pipeline()
         self.pipeline.add(self.audiosrc, self.level, self.encoder, self.sink)
         gst.element_link_many (self.audiosrc, self.level, self.encoder, self.sink)        
-
-        self.app = instance
         self._createUI()
 
         self.is_recording = False
@@ -94,11 +95,14 @@ class AudioRecorder(gtk.HBox):
         self.sink.set_property("fd", self._tempfd)
         self.pipeline.get_bus().add_signal_watch()
         self._cb_id = self.pipeline.get_bus().connect("message::element", self._on_message)
+        self.pipeline.set_clock(self.app.current.pipeline.getClock())
+        self.app.current.pipeline.play()
         self.pipeline.set_state(gst.STATE_PLAYING)
 
     def stop_recording(self):
         self.pipeline.get_bus().disconnect(self._cb_id)
         self.pipeline.get_bus().remove_signal_watch()
+        self.app.current.pipeline.stop()
         self.pipeline.set_state(gst.STATE_NULL)
         os.close(self._tempfd) # assuming gstreamer doesn't close the fd. Should check
         self.app.current.sources.addUris(['file:///' + self._temppath])
