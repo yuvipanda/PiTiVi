@@ -44,8 +44,8 @@ class AudioRecorder(gtk.HBox):
 
         self.level.set_property("message", True)
 
-        self.pipeline = gst.Pipeline()
-        self.pipeline.add(self.audiosrc, self.level, self.encoder, self.sink)
+        self.recording_bin = gst.Bin()
+        self.recording_bin.add(self.audiosrc, self.level, self.encoder, self.sink)
         gst.element_link_many (self.audiosrc, self.level, self.encoder, self.sink)        
         self._createUI()
 
@@ -93,19 +93,16 @@ class AudioRecorder(gtk.HBox):
     def start_recording(self):
         self._tempfd, self._temppath = tempfile.mkstemp()
         self.sink.set_property("fd", self._tempfd)
-        self.pipeline.get_bus().add_signal_watch()
-        self._cb_id = self.pipeline.get_bus().connect("message::element", self._on_message)
-        self.pipeline.set_clock(self.app.current.pipeline.getClock())
+        self._cb_id = self.app.current.pipeline._pipeline.get_bus().connect("message::element", self._on_message)
+        self.app.current.pipeline._pipeline.add(self.recording_bin)
         self.app.current.pipeline.play()
-        self.pipeline.set_state(gst.STATE_PLAYING)
 
     def stop_recording(self):
-        self.pipeline.get_bus().disconnect(self._cb_id)
-        self.pipeline.get_bus().remove_signal_watch()
+        self.app.current.pipeline._pipeline.get_bus().disconnect(self._cb_id)
         self.app.current.pipeline.stop()
-        self.pipeline.set_state(gst.STATE_NULL)
         os.close(self._tempfd) # assuming gstreamer doesn't close the fd. Should check
         self.app.current.sources.addUris(['file:///' + self._temppath])
+        self.app.current.pipeline._pipeline.remove(self.recording_bin)
 
     def show_all(self):
         HBox.show_all(self)
