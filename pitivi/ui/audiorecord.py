@@ -49,6 +49,7 @@ class AudioRecorder(gtk.HBox):
         gst.element_link_many (self.audiosrc, self.level, self.encoder, self.sink)        
         self._createUI()
 
+
         self.is_recording = False
 
     def _createUI(self):
@@ -94,15 +95,25 @@ class AudioRecorder(gtk.HBox):
         self._tempfd, self._temppath = tempfile.mkstemp()
         self.sink.set_property("fd", self._tempfd)
         self._cb_id = self.app.current.pipeline._pipeline.get_bus().connect("message::element", self._on_message)
-        self.app.current.pipeline._pipeline.add(self.recording_bin)
+        if not 'bin_added' in self.__dict__:
+            self.app.current.pipeline._pipeline.add(self.recording_bin) # We should make this thing permanent part of pipeline. Refactor needed. HACK
+            self.bin_added = True
         self.app.current.pipeline.play()
 
     def stop_recording(self):
         self.app.current.pipeline._pipeline.get_bus().disconnect(self._cb_id)
         self.app.current.pipeline.stop()
         os.close(self._tempfd) # assuming gstreamer doesn't close the fd. Should check
+
+        self.app.current.sources.connect("source-added", self._sourceAddedCb)
         self.app.current.sources.addUris(['file:///' + self._temppath])
-        self.app.current.pipeline._pipeline.remove(self.recording_bin)
+        
+
+    def _sourceAddedCb(self, unused, factory):
+        # Add recorded file to timeline
+        # TODO: Check to make sure that we're adding the correct factory
+        timeline_obj = self.app.current.timeline.addSourceFactory(factory)
+        self.app.current.sources.disconnect_by_func(self._sourceAddedCb)
 
     def show_all(self):
         HBox.show_all(self)
