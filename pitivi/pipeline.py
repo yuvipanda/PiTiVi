@@ -172,6 +172,16 @@ class Pipeline(Signallable, Loggable):
         for i in [x for x in self.actions if x.isActive()]:
             i.deactivate()
             self.removeAction(i)
+    
+    # Self Contained bin methods
+    def addBin(self, bin):
+        self._pipeline.add(bin)
+
+    def removeBin(self, bin):
+        self._pipeline.remove(bin)
+
+    def getBus(self):
+        return self._pipeline.get_bus()
 
     #{ Action-related methods
 

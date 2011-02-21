@@ -94,14 +94,14 @@ class AudioRecorder(gtk.HBox):
     def start_recording(self):
         self._tempfd, self._temppath = tempfile.mkstemp()
         self.sink.set_property("fd", self._tempfd)
-        self._cb_id = self.app.current.pipeline._pipeline.get_bus().connect("message::element", self._on_message)
+        self._cb_id = self.app.current.pipeline.getBus().connect("message::element", self._on_message)
         if not 'bin_added' in self.__dict__:
-            self.app.current.pipeline._pipeline.add(self.recording_bin) # We should make this thing permanent part of pipeline. Refactor needed. HACK
+            self.app.current.pipeline.addBin(self.recording_bin) # We should make this thing permanent part of pipeline. Refactor needed. HACK
             self.bin_added = True
         self.app.current.pipeline.play()
 
     def stop_recording(self):
-        self.app.current.pipeline._pipeline.get_bus().disconnect(self._cb_id)
+        self.app.current.pipeline.getBus().disconnect(self._cb_id)
         self.app.current.pipeline.stop()
         os.close(self._tempfd) # assuming gstreamer doesn't close the fd. Should check
 
