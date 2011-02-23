@@ -1,5 +1,6 @@
 import tempfile
 import os
+import shutil
 
 import gst
 import gtk
@@ -55,6 +56,11 @@ class AudioRecorder(gtk.HBox):
     def _createUI(self):
         builder = gtk.Builder()
         builder.add_from_string(ui)
+        builder.add_from_file(os.path.join(os.path.dirname(__file__), "audiosave.glade"))
+
+        self.audiosave_dialog = builder.get_object("audiosave_dialog")
+        self.filename_entry = builder.get_object("filename")
+        self.audiosave_dialog.set_default_response(gtk.RESPONSE_OK)
 
         self.record_button = builder.get_object("record_button")
         self.button_image = builder.get_object("button_image")
@@ -105,9 +111,17 @@ class AudioRecorder(gtk.HBox):
         self.app.current.pipeline.stop()
         os.close(self._tempfd) # assuming gstreamer doesn't close the fd. Should check
 
-        self.app.current.sources.connect("source-added", self._sourceAddedCb)
-        self.app.current.sources.addUris(['file:///' + self._temppath])
-        
+        response = self.audiosave_dialog.run()
+        if response == gtk.RESPONSE_OK:
+            self.audiosave_dialog.hide()
+            self.file_path = self.filename_entry.get_text()
+            shutil.copy2(self._temppath, self.file_path)
+            self.app.current.sources.connect("source-added", self._sourceAddedCb)
+            self.app.current.sources.addUris(['file:///' + self.file_path])
+        else:
+            os.remove(self._temppath)
+
+       
 
     def _sourceAddedCb(self, unused, factory):
         # Add recorded file to timeline
