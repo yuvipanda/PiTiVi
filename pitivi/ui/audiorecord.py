@@ -50,7 +50,6 @@ class AudioRecorder(gtk.HBox):
         gst.element_link_many (self.audiosrc, self.level, self.encoder, self.sink)        
         self._createUI()
 
-
         self.is_recording = False
 
     def _createUI(self):
@@ -59,9 +58,8 @@ class AudioRecorder(gtk.HBox):
         builder.add_from_file(os.path.join(os.path.dirname(__file__), "audiosave.glade"))
 
         self.audiosave_dialog = builder.get_object("audiosave_dialog")
-        self.filename_entry = builder.get_object("filename")
-        self.audiosave_dialog.set_default_response(gtk.RESPONSE_OK)
-
+        self.audiosave_dialog.filename_entry = builder.get_object("filename")
+        self.audiosave_dialog.folderchooser = builder.get_object("folderchooser")
         self.record_button = builder.get_object("record_button")
         self.button_image = builder.get_object("button_image")
         self.vumeter = FVUMeter() 
@@ -101,27 +99,25 @@ class AudioRecorder(gtk.HBox):
         self._tempfd, self._temppath = tempfile.mkstemp()
         self.sink.set_property("fd", self._tempfd)
         self._cb_id = self.app.current.pipeline.getBus().connect("message::element", self._on_message)
-        if not 'bin_added' in self.__dict__:
-            self.app.current.pipeline.addBin(self.recording_bin) # We should make this thing permanent part of pipeline. Refactor needed. HACK
-            self.bin_added = True
+        self.app.current.pipeline.addBin(self.recording_bin) # We should make this thing permanent part of pipeline. Refactor needed. HACK
         self.app.current.pipeline.play()
 
     def stop_recording(self):
         self.app.current.pipeline.getBus().disconnect(self._cb_id)
         self.app.current.pipeline.stop()
+        self.app.current.pipeline.removeBin(self.recording_bin)
         os.close(self._tempfd) # assuming gstreamer doesn't close the fd. Should check
-
+        
         response = self.audiosave_dialog.run()
         if response == gtk.RESPONSE_OK:
             self.audiosave_dialog.hide()
-            self.file_path = self.filename_entry.get_text()
-            shutil.copy2(self._temppath, self.file_path)
+            self.file_path = os.path.join(self.audiosave_dialog.folderchooser.get_filename(),
+                    self.audiosave_dialog.filename_entry.get_text())
+            shutil.copy(self._temppath, self.file_path)
             self.app.current.sources.connect("source-added", self._sourceAddedCb)
             self.app.current.sources.addUris(['file:///' + self.file_path])
         else:
             os.remove(self._temppath)
-
-       
 
     def _sourceAddedCb(self, unused, factory):
         # Add recorded file to timeline
