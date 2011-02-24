@@ -111,6 +111,7 @@ class AudioRecorder(gtk.HBox):
         response = self.audiosave_dialog.run()
         if response == gtk.RESPONSE_OK:
             self.audiosave_dialog.hide()
+            self.audiosave_dialog.filename_entry.set_text("")
             self.file_path = os.path.join(self.audiosave_dialog.folderchooser.get_filename(),
                     self.audiosave_dialog.filename_entry.get_text())
             shutil.copy(self._temppath, self.file_path)
