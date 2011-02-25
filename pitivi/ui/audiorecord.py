@@ -116,11 +116,19 @@ class AudioRecorder(gtk.HBox):
             self.file_path = os.path.join(self.audiosave_dialog.folderchooser.get_filename(),
                     self.audiosave_dialog.filename_entry.get_text())
             if os.path.exists(self.file_path):
+                if self._sourceExists('file:///' + self.file_path):
+                    iBox = gtk.MessageDialog(self.audiosave_dialog,
+                            gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_OK,
+                            "File already exists in the project and cannot be overwritten. Please choose a different filename")
+                    iBox.run()
+                    iBox.destroy()
+                    self._save_file()
+                    return
                 mBox = gtk.MessageDialog(self.audiosave_dialog,
                         gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO,
                         "File already exists. Do you want to overwrite it?")
                 mresponse = mBox.run()
-                mBox.hide()
+                mBox.destroy()
                 if mresponse == gtk.RESPONSE_NO:
                     self._save_file()
                     return
@@ -133,6 +141,12 @@ class AudioRecorder(gtk.HBox):
         self.audiosave_dialog.hide()
         self.audiosave_dialog.filename_entry.set_text("")
 
+    def _sourceExists(self, uri):
+        try:
+            self.app.current.sources.getUri(uri)
+            return True
+        except:
+            return False
 
     def _sourceAddedCb(self, unused, factory):
         # Add recorded file to timeline
