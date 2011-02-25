@@ -33,7 +33,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="invisible_char">•</property>
-                <property name="text" translatable="yes">foo.flac</property>
+                <property name="text" translatable="yes"></property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
