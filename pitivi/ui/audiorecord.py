@@ -99,7 +99,7 @@ class AudioRecorder(gtk.HBox):
         self._tempfd, self._temppath = tempfile.mkstemp()
         self.sink.set_property("fd", self._tempfd)
         self._cb_id = self.app.current.pipeline.getBus().connect("message::element", self._on_message)
-        self.app.current.pipeline.addBin(self.recording_bin) # We should make this thing permanent part of pipeline. Refactor needed. HACK
+        self.app.current.pipeline.addBin(self.recording_bin) 
         self.app.current.pipeline.play()
 
     def stop_recording(self):
@@ -107,13 +107,25 @@ class AudioRecorder(gtk.HBox):
         self.app.current.pipeline.stop()
         self.app.current.pipeline.removeBin(self.recording_bin)
         os.close(self._tempfd) # assuming gstreamer doesn't close the fd. Should check
-        
+        self._save_file()
+       
+    def _save_file(self):
+        self.audiosave_dialog.set_transient_for(self.app.gui)
         response = self.audiosave_dialog.run()
         if response == gtk.RESPONSE_OK:
-            self.audiosave_dialog.hide()
-            self.audiosave_dialog.filename_entry.set_text("")
             self.file_path = os.path.join(self.audiosave_dialog.folderchooser.get_filename(),
                     self.audiosave_dialog.filename_entry.get_text())
+            if os.path.exists(self.file_path):
+                mBox = gtk.MessageDialog(self.audiosave_dialog,
+                        gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO,
+                        "File already exists. Do you want to overwrite it?")
+                mresponse = mBox.run()
+                mBox.hide()
+                if mresponse == gtk.RESPONSE_NO:
+                    self._save_file()
+                    return
+            self.audiosave_dialog.hide()
+            self.audiosave_dialog.filename_entry.set_text("")
             shutil.copy(self._temppath, self.file_path)
             self.app.current.sources.connect("source-added", self._sourceAddedCb)
             self.app.current.sources.addUris(['file:///' + self.file_path])
