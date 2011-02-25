@@ -124,13 +124,15 @@ class AudioRecorder(gtk.HBox):
                 if mresponse == gtk.RESPONSE_NO:
                     self._save_file()
                     return
-            self.audiosave_dialog.hide()
-            self.audiosave_dialog.filename_entry.set_text("")
             shutil.copy(self._temppath, self.file_path)
             self.app.current.sources.connect("source-added", self._sourceAddedCb)
             self.app.current.sources.addUris(['file:///' + self.file_path])
         else:
             os.remove(self._temppath)
+
+        self.audiosave_dialog.hide()
+        self.audiosave_dialog.filename_entry.set_text("")
+
 
     def _sourceAddedCb(self, unused, factory):
         # Add recorded file to timeline
