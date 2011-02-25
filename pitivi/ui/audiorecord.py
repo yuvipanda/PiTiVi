@@ -1,3 +1,5 @@
+from gettext import gettext as _ 
+
 import tempfile
 import os
 import shutil
@@ -119,14 +121,14 @@ class AudioRecorder(gtk.HBox):
                 if self._sourceExists('file:///' + self.file_path):
                     iBox = gtk.MessageDialog(self.audiosave_dialog,
                             gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_OK,
-                            "File already exists in the project and cannot be overwritten. Please choose a different filename")
+                            _("File already exists in the project and cannot be overwritten. Please choose a different filename"))
                     iBox.run()
                     iBox.destroy()
                     self._save_file()
                     return
                 mBox = gtk.MessageDialog(self.audiosave_dialog,
                         gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO,
-                        "File already exists. Do you want to overwrite it?")
+                        _("File already exists. Do you want to overwrite it?"))
                 mresponse = mBox.run()
                 mBox.destroy()
                 if mresponse == gtk.RESPONSE_NO:
