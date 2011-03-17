@@ -91,11 +91,11 @@ class AudioRecorder(gtk.HBox):
         if not self.is_recording:
             self.start_recording()
             self.is_recording = True
-            self.button_image.set_from_stock(gtk.STOCK_MEDIA_STOP, gtk.ICON_SIZE_LARGE_TOOLBAR)
+            self.button_image.set_from_stock(gtk.STOCK_MEDIA_STOP, gtk.ICON_SIZE_SMALL_TOOLBAR)
         else:
             self.stop_recording()
             self.is_recording = False
-            self.button_image.set_from_stock(gtk.STOCK_MEDIA_RECORD, gtk.ICON_SIZE_LARGE_TOOLBAR)
+            self.button_image.set_from_stock(gtk.STOCK_MEDIA_RECORD, gtk.ICON_SIZE_SMALL_TOOLBAR)
 
     def start_recording(self):
         self._tempfd, self._temppath = tempfile.mkstemp()
