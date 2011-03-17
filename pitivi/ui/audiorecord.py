@@ -108,7 +108,7 @@ class AudioRecorder(gtk.HBox):
         self.app.current.pipeline.getBus().disconnect(self._cb_id)
         self.app.current.pipeline.stop()
         self.app.current.pipeline.removeBin(self.recording_bin)
-        os.close(self._tempfd) # assuming gstreamer doesn't close the fd. Should check
+        os.close(self._tempfd) # gstreamer doesn't close the fd.
         self._save_file()
        
     def _save_file(self):
